@@ -109,11 +109,23 @@ void free_fall(SDL_Rect *bird)
     }
 }
 
-inline void show_score_board(SDL_Rect *score_board)
+void show_score_board(SDL_Renderer *renderer, SDL_Rect *score_board, Mix_Chunk *die_sound, std::vector<score_struct> score_array, int score_pointer_1, int score_pointer_2, SDL_Rect *score_board_score_rect_1, SDL_Rect *score_board_score_rect_2)
 {
     score_board->y = score_board->y - 8;
     if (score_board->y < SCREEN_HEIGHT / 2 - 75)
+    {
         score_board->y = SCREEN_HEIGHT / 2 - 75;
+        if (score_pointer_1 == 0)
+            SDL_RenderCopy(renderer, score_array[score_pointer_2].score_n, &score_array[score_pointer_2].score_n_rect_1, score_board_score_rect_1);
+        else
+        {
+            score_board_score_rect_1->x = score_board->x + score_board->w - 65 - 10;
+            SDL_RenderCopy(renderer, score_array[score_pointer_1].score_n, &score_array[score_pointer_1].score_n_rect_1, score_board_score_rect_1);
+            SDL_RenderCopy(renderer, score_array[score_pointer_2].score_n, &score_array[score_pointer_2].score_n_rect_1, score_board_score_rect_2);
+        }
+    }
+    if (score_board->y == SCREEN_HEIGHT - 160)
+        Mix_PlayChannel(-1, die_sound, 0);
 }
 
 int main(int argc, char *argv[])
@@ -311,6 +323,9 @@ int main(int argc, char *argv[])
     score_array.push_back(score_n_8);
     score_array.push_back(score_n_9);
 
+    SDL_Rect score_board_score_rect_1 = {score_board_rect_2.x + score_board_rect_2.w - 65, SCREEN_HEIGHT / 2 - 75 + 45, 20, 20};
+    SDL_Rect score_board_score_rect_2 = {score_board_score_rect_1.x + score_board_score_rect_1.w - 10, SCREEN_HEIGHT / 2 - 75 + 45, 20, 20};
+
     int score_pointer_1 = 0;
     int score_pointer_2 = 0;
 
@@ -331,6 +346,8 @@ int main(int argc, char *argv[])
 
     bool start = false;
     bool player_died = false;
+    int player_died_for_blink = 0;
+    int last_time_blink = 0;
 
     while (running)
     {
@@ -370,9 +387,12 @@ int main(int argc, char *argv[])
                 pipe_2_crossed = false;
                 pipe_3_crossed = false;
             }
+            if(event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_m)
+                player_died = true;
         }
 
         SDL_RenderClear(renderer);
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 1);
 
         if (!start)
         {
@@ -387,50 +407,58 @@ int main(int argc, char *argv[])
         if (!player_died)
             move_platform(&platform_1_rect_2, &platform_2_rect_2);
 
-        SDL_RenderCopy(renderer, background_texture, &bt_src_rect, NULL);
-        SDL_RenderCopy(renderer, pipe_texture_1, &pipe_1_rect_1, &pipe_1_rect_2);
-        SDL_RenderCopy(renderer, pipe_texture_2, &pipe_2_rect_1, &pipe_2_rect_2);
-        SDL_RenderCopy(renderer, pipe_texture_3, &pipe_3_rect_1, &pipe_3_rect_2);
-        SDL_RenderCopy(renderer, pipe_texture_4, &pipe_4_rect_1, &pipe_4_rect_2);
-        SDL_RenderCopy(renderer, pipe_texture_5, &pipe_5_rect_1, &pipe_5_rect_2);
-        SDL_RenderCopy(renderer, pipe_texture_6, &pipe_6_rect_1, &pipe_6_rect_2);
-        if (score_pointer_1 == 0)
-            SDL_RenderCopy(renderer, score_array[score_pointer_2].score_n, &score_array[score_pointer_2].score_n_rect_1, &score_array[score_pointer_2].score_n_rect_2);
-        else
+        if (!player_died_for_blink)
         {
-            score_array[score_pointer_1].score_n_rect_2.x = SCREEN_WIDTH / 2 - 15;
-            SDL_RenderCopy(renderer, score_array[score_pointer_1].score_n, &score_array[score_pointer_1].score_n_rect_1, &score_array[score_pointer_1].score_n_rect_2);
-            score_array[score_pointer_2].score_n_rect_2.x = score_array[score_pointer_1].score_n_rect_2.w + score_array[score_pointer_1].score_n_rect_2.x;
-            SDL_RenderCopy(renderer, score_array[score_pointer_2].score_n, &score_array[score_pointer_2].score_n_rect_1, &score_array[score_pointer_2].score_n_rect_2);
-        }
+            SDL_RenderCopy(renderer, background_texture, &bt_src_rect, NULL);
+            SDL_RenderCopy(renderer, pipe_texture_1, &pipe_1_rect_1, &pipe_1_rect_2);
+            SDL_RenderCopy(renderer, pipe_texture_2, &pipe_2_rect_1, &pipe_2_rect_2);
+            SDL_RenderCopy(renderer, pipe_texture_3, &pipe_3_rect_1, &pipe_3_rect_2);
+            SDL_RenderCopy(renderer, pipe_texture_4, &pipe_4_rect_1, &pipe_4_rect_2);
+            SDL_RenderCopy(renderer, pipe_texture_5, &pipe_5_rect_1, &pipe_5_rect_2);
+            SDL_RenderCopy(renderer, pipe_texture_6, &pipe_6_rect_1, &pipe_6_rect_2);
+            if (score_pointer_1 == 0)
+                SDL_RenderCopy(renderer, score_array[score_pointer_2].score_n, &score_array[score_pointer_2].score_n_rect_1, &score_array[score_pointer_2].score_n_rect_2);
+            else
+            {
+                score_array[score_pointer_1].score_n_rect_2.x = SCREEN_WIDTH / 2 - 15;
+                SDL_RenderCopy(renderer, score_array[score_pointer_1].score_n, &score_array[score_pointer_1].score_n_rect_1, &score_array[score_pointer_1].score_n_rect_2);
+                score_array[score_pointer_2].score_n_rect_2.x = score_array[score_pointer_1].score_n_rect_2.w + score_array[score_pointer_1].score_n_rect_2.x;
+                SDL_RenderCopy(renderer, score_array[score_pointer_2].score_n, &score_array[score_pointer_2].score_n_rect_1, &score_array[score_pointer_2].score_n_rect_2);
+            }
 
-        if (!start)
-            SDL_RenderCopy(renderer, initial_bird, &initial_bird_rect_1, &initial_bird_rect_2);
-        else
-            SDL_RenderCopyEx(renderer, bird, &bird_rect_1, &bird_rect_2, bird_angle, NULL, SDL_FLIP_NONE);
-        SDL_RenderCopy(renderer, platform_texture_1, &platform_1_rect_1, &platform_1_rect_2);
-        SDL_RenderCopy(renderer, platform_texture_2, &platform_2_rect_1, &platform_2_rect_2);
-        if (player_died)
-        {
-            show_score_board(&score_board_rect_2);
-            SDL_RenderCopy(renderer, score_board, &score_board_rect_1, &score_board_rect_2);
-        }
+            if (!start)
+                SDL_RenderCopy(renderer, initial_bird, &initial_bird_rect_1, &initial_bird_rect_2);
+            else
+                SDL_RenderCopyEx(renderer, bird, &bird_rect_1, &bird_rect_2, bird_angle, NULL, SDL_FLIP_NONE);
+            SDL_RenderCopy(renderer, platform_texture_1, &platform_1_rect_1, &platform_1_rect_2);
+            SDL_RenderCopy(renderer, platform_texture_2, &platform_2_rect_1, &platform_2_rect_2);
 
+            if (player_died)
+            {
+                SDL_RenderCopy(renderer, score_board, &score_board_rect_1, &score_board_rect_2);
+                show_score_board(renderer, &score_board_rect_2, die_sound, score_array, score_pointer_1, score_pointer_2, &score_board_score_rect_1, &score_board_score_rect_2);
+            }
+        }
         if (SDL_GetTicks() - last_time >= 150 && start)
         {
             last_time = SDL_GetTicks();
             flap_bird(&bird_rect_1);
         }
-        if (SDL_HasIntersection(&bird_rect_2, &pipe_1_rect_2) || SDL_HasIntersection(&bird_rect_2, &pipe_2_rect_2) || SDL_HasIntersection(&bird_rect_2, &pipe_3_rect_2) || SDL_HasIntersection(&bird_rect_2, &pipe_4_rect_2) || SDL_HasIntersection(&bird_rect_2, &pipe_5_rect_2) || SDL_HasIntersection(&bird_rect_2, &pipe_6_rect_2) || SDL_HasIntersection(&bird_rect_2, &platform_1_rect_2) || SDL_HasIntersection(&bird_rect_2, &platform_2_rect_2))
-        {
-            if (!player_died)
-            {
-                Mix_PlayChannel(-1, hit_sound, 0);
-                // SDL_Delay(300);
-                Mix_PlayChannel(-1, die_sound, 0);
-            }
-            player_died = true;
-        }
+        if (SDL_GetTicks() - last_time_blink >= 70)
+            player_died_for_blink = false;
+        // std::cout<<player_died_for_blink<<std::endl;
+        // if (!player_died && (SDL_HasIntersection(&bird_rect_2, &pipe_1_rect_2) || SDL_HasIntersection(&bird_rect_2, &pipe_2_rect_2) || SDL_HasIntersection(&bird_rect_2, &pipe_3_rect_2) || SDL_HasIntersection(&bird_rect_2, &pipe_4_rect_2) || SDL_HasIntersection(&bird_rect_2, &pipe_5_rect_2) || SDL_HasIntersection(&bird_rect_2, &pipe_6_rect_2) || SDL_HasIntersection(&bird_rect_2, &platform_1_rect_2) || SDL_HasIntersection(&bird_rect_2, &platform_2_rect_2)))
+        // {
+        //     if (!player_died)
+        //     {
+        //         Mix_PlayChannel(-1, hit_sound, 0);
+        //         // SDL_Delay(300);
+        //         // Mix_PlayChannel(-1, die_sound, 0);
+        //     }
+        //     player_died = true;
+        //     player_died_for_blink = true;
+        //     last_time_blink = SDL_GetTicks();
+        // }
         if (player_died)
             free_fall(&bird_rect_2);
         if (!pipe_1_crossed && pipe_1_rect_2.x < bird_rect_2.x)
