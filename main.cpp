@@ -109,19 +109,29 @@ void free_fall(SDL_Rect *bird)
     }
 }
 
-void show_score_board(SDL_Renderer *renderer, SDL_Rect *score_board, Mix_Chunk *die_sound, std::vector<score_struct> score_array, int score_pointer_1, int score_pointer_2, SDL_Rect *score_board_score_rect_1, SDL_Rect *score_board_score_rect_2)
+void show_score_board(SDL_Renderer *renderer, SDL_Rect *score_board, Mix_Chunk *die_sound, std::vector<score_struct> score_array, int score_pointer_1, int score_pointer_2, int high_score_pointer_1, int high_score_pointer_2, SDL_Rect *score_board_score_rect_1, SDL_Rect *score_board_score_rect_2, SDL_Rect *high_score_board_score_rect_1, SDL_Rect *high_score_board_score_rect_2)
 {
     score_board->y = score_board->y - 8;
     if (score_board->y < SCREEN_HEIGHT / 2 - 75)
     {
         score_board->y = SCREEN_HEIGHT / 2 - 75;
         if (score_pointer_1 == 0)
+        {
+            score_board_score_rect_1->y = SCREEN_HEIGHT / 2 - 75 + 45;
             SDL_RenderCopy(renderer, score_array[score_pointer_2].score_n, &score_array[score_pointer_2].score_n_rect_1, score_board_score_rect_1);
+            SDL_RenderCopy(renderer, score_array[high_score_pointer_2].score_n, &score_array[high_score_pointer_2].score_n_rect_1, high_score_board_score_rect_2);
+        }
         else
         {
             score_board_score_rect_1->x = score_board->x + score_board->w - 65 - 10;
             SDL_RenderCopy(renderer, score_array[score_pointer_1].score_n, &score_array[score_pointer_1].score_n_rect_1, score_board_score_rect_1);
             SDL_RenderCopy(renderer, score_array[score_pointer_2].score_n, &score_array[score_pointer_2].score_n_rect_1, score_board_score_rect_2);
+        }
+        if (high_score_pointer_1 > 0)
+        {
+            high_score_board_score_rect_1->x = score_board->x + score_board->w - 65 - 10;
+            SDL_RenderCopy(renderer, score_array[high_score_pointer_1].score_n, &score_array[high_score_pointer_1].score_n_rect_1, high_score_board_score_rect_1);
+            SDL_RenderCopy(renderer, score_array[high_score_pointer_2].score_n, &score_array[high_score_pointer_2].score_n_rect_1, high_score_board_score_rect_2);
         }
     }
     if (score_board->y == SCREEN_HEIGHT - 160)
@@ -325,9 +335,13 @@ int main(int argc, char *argv[])
 
     SDL_Rect score_board_score_rect_1 = {score_board_rect_2.x + score_board_rect_2.w - 65, SCREEN_HEIGHT / 2 - 75 + 45, 20, 20};
     SDL_Rect score_board_score_rect_2 = {score_board_score_rect_1.x + score_board_score_rect_1.w - 10, SCREEN_HEIGHT / 2 - 75 + 45, 20, 20};
+    SDL_Rect high_score_board_score_rect_1 = {score_board_rect_2.x + score_board_rect_2.w - 65, SCREEN_HEIGHT / 2 - 75 + 100, 20, 20};
+    SDL_Rect high_score_board_score_rect_2 = {score_board_score_rect_1.x + score_board_score_rect_1.w - 10, SCREEN_HEIGHT / 2 - 75 + 100, 20, 20};
 
     int score_pointer_1 = 0;
     int score_pointer_2 = 0;
+    int high_score_pointer_1 = 0;
+    int high_score_pointer_2 = 0;
 
     bool pipe_1_crossed = false;
     bool pipe_2_crossed = false;
@@ -387,7 +401,7 @@ int main(int argc, char *argv[])
                 pipe_2_crossed = false;
                 pipe_3_crossed = false;
             }
-            if(event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_m)
+            if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_m)
                 player_died = true;
         }
 
@@ -417,7 +431,9 @@ int main(int argc, char *argv[])
             SDL_RenderCopy(renderer, pipe_texture_5, &pipe_5_rect_1, &pipe_5_rect_2);
             SDL_RenderCopy(renderer, pipe_texture_6, &pipe_6_rect_1, &pipe_6_rect_2);
             if (score_pointer_1 == 0)
+            {
                 SDL_RenderCopy(renderer, score_array[score_pointer_2].score_n, &score_array[score_pointer_2].score_n_rect_1, &score_array[score_pointer_2].score_n_rect_2);
+            }
             else
             {
                 score_array[score_pointer_1].score_n_rect_2.x = SCREEN_WIDTH / 2 - 15;
@@ -436,7 +452,7 @@ int main(int argc, char *argv[])
             if (player_died)
             {
                 SDL_RenderCopy(renderer, score_board, &score_board_rect_1, &score_board_rect_2);
-                show_score_board(renderer, &score_board_rect_2, die_sound, score_array, score_pointer_1, score_pointer_2, &score_board_score_rect_1, &score_board_score_rect_2);
+                show_score_board(renderer, &score_board_rect_2, die_sound, score_array, score_pointer_1, score_pointer_2, high_score_pointer_1, high_score_pointer_2, &score_board_score_rect_1, &score_board_score_rect_2, &high_score_board_score_rect_1, &high_score_board_score_rect_2);
             }
         }
         if (SDL_GetTicks() - last_time >= 150 && start)
@@ -464,6 +480,20 @@ int main(int argc, char *argv[])
         if (!pipe_1_crossed && pipe_1_rect_2.x < bird_rect_2.x)
         {
             pipe_1_crossed = true;
+
+            if (score_pointer_1 == high_score_pointer_1 && score_pointer_2 == high_score_pointer_2)
+            {
+                if (high_score_pointer_2 >= score_array.size() - 1)
+                {
+                    high_score_pointer_2 = 0;
+                    high_score_pointer_1 = high_score_pointer_1 + 1;
+                }
+                else
+                    high_score_pointer_2 = high_score_pointer_2 + 1;
+                if (high_score_pointer_1 > score_array.size() - 1)
+                    high_score_pointer_1 = 0;
+            }
+
             if (score_pointer_2 >= score_array.size() - 1)
             {
                 score_pointer_2 = 0;
@@ -477,6 +507,20 @@ int main(int argc, char *argv[])
         if (!pipe_2_crossed && pipe_3_rect_2.x < bird_rect_2.x)
         {
             pipe_2_crossed = true;
+
+            if (score_pointer_1 == high_score_pointer_1 && score_pointer_2 == high_score_pointer_2)
+            {
+                if (high_score_pointer_2 >= score_array.size() - 1)
+                {
+                    high_score_pointer_2 = 0;
+                    high_score_pointer_1 = high_score_pointer_1 + 1;
+                }
+                else
+                    high_score_pointer_2 = high_score_pointer_2 + 1;
+                if (high_score_pointer_1 > score_array.size() - 1)
+                    high_score_pointer_1 = 0;
+            }
+
             if (score_pointer_2 >= score_array.size() - 1)
             {
                 score_pointer_2 = 0;
@@ -490,6 +534,20 @@ int main(int argc, char *argv[])
         if (!pipe_3_crossed && pipe_5_rect_2.x < bird_rect_2.x)
         {
             pipe_3_crossed = true;
+
+            if (score_pointer_1 == high_score_pointer_1 && score_pointer_2 == high_score_pointer_2)
+            {
+                if (high_score_pointer_2 >= score_array.size() - 1)
+                {
+                    high_score_pointer_2 = 0;
+                    high_score_pointer_1 = high_score_pointer_1 + 1;
+                }
+                else
+                    high_score_pointer_2 = high_score_pointer_2 + 1;
+                if (high_score_pointer_1 > score_array.size() - 1)
+                    high_score_pointer_1 = 0;
+            }
+
             if (score_pointer_2 >= score_array.size() - 1)
             {
                 score_pointer_2 = 0;
