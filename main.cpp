@@ -7,7 +7,7 @@
 
 #define SCREEN_WIDTH 380
 #define SCREEN_HEIGHT 650
-#define PIPE_GAP 145
+#define PIPE_GAP 150
 
 float speed = 0;
 float bird_angle = 0.0;
@@ -19,7 +19,6 @@ float hover_speed = 2.0f;
 
 struct score_struct
 {
-    SDL_Texture *score_n;
     SDL_Rect score_n_rect_1;
     SDL_Rect score_n_rect_2;
 };
@@ -109,7 +108,7 @@ void free_fall(SDL_Rect *bird)
     }
 }
 
-void show_score_board(SDL_Renderer *renderer, SDL_Rect *score_board, Mix_Chunk *die_sound, std::vector<score_struct> score_array, int score_pointer_1, int score_pointer_2, int high_score_pointer_1, int high_score_pointer_2, SDL_Rect *score_board_score_rect_1, SDL_Rect *score_board_score_rect_2, SDL_Rect *high_score_board_score_rect_1, SDL_Rect *high_score_board_score_rect_2)
+void show_score_board(SDL_Renderer *renderer, SDL_Rect *score_board, SDL_Texture *sprite_sheet_image_texture, Mix_Chunk *die_sound, std::vector<score_struct> score_array, int score_pointer_1, int score_pointer_2, int high_score_pointer_1, int high_score_pointer_2, SDL_Rect *score_board_score_rect_1, SDL_Rect *score_board_score_rect_2, SDL_Rect *high_score_board_score_rect_1, SDL_Rect *high_score_board_score_rect_2)
 {
     score_board->y = score_board->y - 8;
     if (score_board->y < SCREEN_HEIGHT / 2 - 75)
@@ -118,20 +117,20 @@ void show_score_board(SDL_Renderer *renderer, SDL_Rect *score_board, Mix_Chunk *
         if (score_pointer_1 == 0)
         {
             score_board_score_rect_1->y = SCREEN_HEIGHT / 2 - 75 + 45;
-            SDL_RenderCopy(renderer, score_array[score_pointer_2].score_n, &score_array[score_pointer_2].score_n_rect_1, score_board_score_rect_1);
-            SDL_RenderCopy(renderer, score_array[high_score_pointer_2].score_n, &score_array[high_score_pointer_2].score_n_rect_1, high_score_board_score_rect_2);
+            SDL_RenderCopy(renderer, sprite_sheet_image_texture, &score_array[score_pointer_2].score_n_rect_1, score_board_score_rect_1);
+            SDL_RenderCopy(renderer, sprite_sheet_image_texture, &score_array[high_score_pointer_2].score_n_rect_1, high_score_board_score_rect_2);
         }
         else
         {
             score_board_score_rect_1->x = score_board->x + score_board->w - 65 - 10;
-            SDL_RenderCopy(renderer, score_array[score_pointer_1].score_n, &score_array[score_pointer_1].score_n_rect_1, score_board_score_rect_1);
-            SDL_RenderCopy(renderer, score_array[score_pointer_2].score_n, &score_array[score_pointer_2].score_n_rect_1, score_board_score_rect_2);
+            SDL_RenderCopy(renderer, sprite_sheet_image_texture, &score_array[score_pointer_1].score_n_rect_1, score_board_score_rect_1);
+            SDL_RenderCopy(renderer, sprite_sheet_image_texture, &score_array[score_pointer_2].score_n_rect_1, score_board_score_rect_2);
         }
         if (high_score_pointer_1 > 0)
         {
             high_score_board_score_rect_1->x = score_board->x + score_board->w - 65 - 10;
-            SDL_RenderCopy(renderer, score_array[high_score_pointer_1].score_n, &score_array[high_score_pointer_1].score_n_rect_1, high_score_board_score_rect_1);
-            SDL_RenderCopy(renderer, score_array[high_score_pointer_2].score_n, &score_array[high_score_pointer_2].score_n_rect_1, high_score_board_score_rect_2);
+            SDL_RenderCopy(renderer, sprite_sheet_image_texture, &score_array[high_score_pointer_1].score_n_rect_1, high_score_board_score_rect_1);
+            SDL_RenderCopy(renderer, sprite_sheet_image_texture, &score_array[high_score_pointer_2].score_n_rect_1, high_score_board_score_rect_2);
         }
     }
     if (score_board->y == SCREEN_HEIGHT - 160)
@@ -224,100 +223,79 @@ int main(int argc, char *argv[])
     int pipe_5_y = distr(gen);
 
     SDL_Surface *sprite_sheet_image = IMG_Load("spritesheet.png");
-    SDL_Texture *background_texture = SDL_CreateTextureFromSurface(renderer, sprite_sheet_image);
+    SDL_Texture *sprite_sheet_image_texture = SDL_CreateTextureFromSurface(renderer, sprite_sheet_image);
     SDL_Rect bt_src_rect = {0, 0, 144, 250};
 
-    SDL_Texture *pipe_texture_1 = SDL_CreateTextureFromSurface(renderer, sprite_sheet_image);
     SDL_Rect pipe_1_rect_1 = {55, 373, 28, 110};
     SDL_Rect pipe_1_rect_2 = {SCREEN_WIDTH + 200, pipe_1_y, 100, 400};
 
-    SDL_Texture *pipe_texture_2 = SDL_CreateTextureFromSurface(renderer, sprite_sheet_image);
     SDL_Rect pipe_2_rect_1 = {83, 323, 28, 110};
     SDL_Rect pipe_2_rect_2 = {SCREEN_WIDTH + 200, 400 + pipe_1_y + PIPE_GAP, 100, 400};
 
-    SDL_Texture *pipe_texture_3 = SDL_CreateTextureFromSurface(renderer, sprite_sheet_image);
     SDL_Rect pipe_3_rect_1 = {55, 373, 28, 110};
     SDL_Rect pipe_3_rect_2 = {pipe_1_rect_2.x + 300, pipe_3_y, 100, 400};
 
-    SDL_Texture *pipe_texture_4 = SDL_CreateTextureFromSurface(renderer, sprite_sheet_image);
     SDL_Rect pipe_4_rect_1 = {83, 323, 28, 110};
     SDL_Rect pipe_4_rect_2 = {pipe_2_rect_2.x + 300, 400 + pipe_3_y + PIPE_GAP, 100, 400};
 
-    SDL_Texture *pipe_texture_5 = SDL_CreateTextureFromSurface(renderer, sprite_sheet_image);
     SDL_Rect pipe_5_rect_1 = {55, 373, 28, 110};
     SDL_Rect pipe_5_rect_2 = {pipe_3_rect_2.x + 300, pipe_5_y, 100, 400};
 
-    SDL_Texture *pipe_texture_6 = SDL_CreateTextureFromSurface(renderer, sprite_sheet_image);
     SDL_Rect pipe_6_rect_1 = {83, 323, 28, 110};
     SDL_Rect pipe_6_rect_2 = {pipe_4_rect_2.x + 300, 400 + pipe_5_y + PIPE_GAP, 100, 400};
 
-    SDL_Texture *platform_texture_1 = SDL_CreateTextureFromSurface(renderer, sprite_sheet_image);
     SDL_Rect platform_1_rect_1 = {300, 0, 160, 50};
     SDL_Rect platform_1_rect_2 = {0, SCREEN_HEIGHT - 130, SCREEN_WIDTH, 130};
 
-    SDL_Texture *platform_texture_2 = SDL_CreateTextureFromSurface(renderer, sprite_sheet_image);
     SDL_Rect platform_2_rect_1 = {300, 0, 160, 50};
     SDL_Rect platform_2_rect_2 = {SCREEN_WIDTH - 10, SCREEN_HEIGHT - 130, SCREEN_WIDTH, 130};
 
-    SDL_Texture *initial_bird = SDL_CreateTextureFromSurface(renderer, sprite_sheet_image);
     SDL_Rect initial_bird_rect_1 = {28, 490, 20, 15};
     SDL_Rect initial_bird_rect_2 = {SCREEN_WIDTH / 2 - 45, SCREEN_HEIGHT / 2, 55, 45};
 
-    SDL_Texture *bird = SDL_CreateTextureFromSurface(renderer, sprite_sheet_image);
     SDL_Rect bird_rect_1 = {0, 490, 20, 15};
     SDL_Rect bird_rect_2 = {SCREEN_WIDTH / 2 - 45, SCREEN_HEIGHT / 2, 55, 45};
 
-    SDL_Texture *score_board = SDL_CreateTextureFromSurface(renderer, sprite_sheet_image);
     SDL_Rect score_board_rect_1 = {0, 258, 120, 60};
     SDL_Rect score_board_rect_2 = {SCREEN_WIDTH / 2 - (SCREEN_WIDTH - 100) / 2, SCREEN_HEIGHT, SCREEN_WIDTH - 100, 150};
 
     score_struct score_n_0;
-    score_n_0.score_n = SDL_CreateTextureFromSurface(renderer, sprite_sheet_image);
     score_n_0.score_n_rect_1 = {495, 60, 15, 20};
     score_n_0.score_n_rect_2 = {SCREEN_WIDTH / 2, 100, 40, 40};
 
     score_struct score_n_1;
-    score_n_1.score_n = SDL_CreateTextureFromSurface(renderer, sprite_sheet_image);
     score_n_1.score_n_rect_1 = {136, 455, 15, 20};
     score_n_1.score_n_rect_2 = {SCREEN_WIDTH / 2, 100, 40, 40};
 
     score_struct score_n_2;
-    score_n_2.score_n = SDL_CreateTextureFromSurface(renderer, sprite_sheet_image);
     score_n_2.score_n_rect_1 = {290, 160, 15, 20};
     score_n_2.score_n_rect_2 = {SCREEN_WIDTH / 2, 100, 40, 40};
 
     score_struct score_n_3;
-    score_n_3.score_n = SDL_CreateTextureFromSurface(renderer, sprite_sheet_image);
     score_n_3.score_n_rect_1 = {305, 160, 15, 20};
     score_n_3.score_n_rect_2 = {SCREEN_WIDTH / 2, 100, 40, 40};
 
     score_struct score_n_4;
-    score_n_4.score_n = SDL_CreateTextureFromSurface(renderer, sprite_sheet_image);
     score_n_4.score_n_rect_1 = {320, 160, 12, 20};
     score_n_4.score_n_rect_2 = {SCREEN_WIDTH / 2, 100, 40, 40};
 
     score_struct score_n_5;
-    score_n_5.score_n = SDL_CreateTextureFromSurface(renderer, sprite_sheet_image);
     score_n_5.score_n_rect_1 = {333, 160, 15, 20};
     score_n_5.score_n_rect_2 = {SCREEN_WIDTH / 2, 100, 40, 40};
 
     score_struct score_n_6;
-    score_n_6.score_n = SDL_CreateTextureFromSurface(renderer, sprite_sheet_image);
     score_n_6.score_n_rect_1 = {290, 184, 15, 20};
     score_n_6.score_n_rect_2 = {SCREEN_WIDTH / 2, 100, 40, 40};
 
     score_struct score_n_7;
-    score_n_7.score_n = SDL_CreateTextureFromSurface(renderer, sprite_sheet_image);
     score_n_7.score_n_rect_1 = {305, 184, 15, 20};
     score_n_7.score_n_rect_2 = {SCREEN_WIDTH / 2, 100, 40, 40};
 
     score_struct score_n_8;
-    score_n_8.score_n = SDL_CreateTextureFromSurface(renderer, sprite_sheet_image);
     score_n_8.score_n_rect_1 = {318, 184, 15, 20};
     score_n_8.score_n_rect_2 = {SCREEN_WIDTH / 2, 100, 40, 40};
 
     score_struct score_n_9;
-    score_n_9.score_n = SDL_CreateTextureFromSurface(renderer, sprite_sheet_image);
     score_n_9.score_n_rect_1 = {334, 184, 15, 20};
     score_n_9.score_n_rect_2 = {SCREEN_WIDTH / 2, 100, 40, 40};
 
@@ -391,6 +369,7 @@ int main(int argc, char *argv[])
                 pipe_4_rect_2.x = pipe_2_rect_2.x + 300;
                 pipe_5_rect_2.x = pipe_3_rect_2.x + 300;
                 pipe_6_rect_2.x = pipe_4_rect_2.x + 300;
+                score_n_0.score_n_rect_2.x = SCREEN_WIDTH / 2;
                 score_pointer_1 = 0;
                 score_pointer_2 = 0;
                 bird_rect_2.y = SCREEN_HEIGHT / 2;
@@ -423,36 +402,37 @@ int main(int argc, char *argv[])
 
         if (!player_died_for_blink)
         {
-            SDL_RenderCopy(renderer, background_texture, &bt_src_rect, NULL);
-            SDL_RenderCopy(renderer, pipe_texture_1, &pipe_1_rect_1, &pipe_1_rect_2);
-            SDL_RenderCopy(renderer, pipe_texture_2, &pipe_2_rect_1, &pipe_2_rect_2);
-            SDL_RenderCopy(renderer, pipe_texture_3, &pipe_3_rect_1, &pipe_3_rect_2);
-            SDL_RenderCopy(renderer, pipe_texture_4, &pipe_4_rect_1, &pipe_4_rect_2);
-            SDL_RenderCopy(renderer, pipe_texture_5, &pipe_5_rect_1, &pipe_5_rect_2);
-            SDL_RenderCopy(renderer, pipe_texture_6, &pipe_6_rect_1, &pipe_6_rect_2);
+            SDL_RenderCopy(renderer, sprite_sheet_image_texture, &bt_src_rect, NULL);
+            SDL_RenderCopy(renderer, sprite_sheet_image_texture, &pipe_1_rect_1, &pipe_1_rect_2);
+            SDL_RenderCopy(renderer, sprite_sheet_image_texture, &pipe_2_rect_1, &pipe_2_rect_2);
+            SDL_RenderCopy(renderer, sprite_sheet_image_texture, &pipe_3_rect_1, &pipe_3_rect_2);
+            SDL_RenderCopy(renderer, sprite_sheet_image_texture, &pipe_4_rect_1, &pipe_4_rect_2);
+            SDL_RenderCopy(renderer, sprite_sheet_image_texture, &pipe_5_rect_1, &pipe_5_rect_2);
+            SDL_RenderCopy(renderer, sprite_sheet_image_texture, &pipe_6_rect_1, &pipe_6_rect_2);
             if (score_pointer_1 == 0)
             {
-                SDL_RenderCopy(renderer, score_array[score_pointer_2].score_n, &score_array[score_pointer_2].score_n_rect_1, &score_array[score_pointer_2].score_n_rect_2);
+                SDL_RenderCopy(renderer, sprite_sheet_image_texture, &score_array[score_pointer_2].score_n_rect_1, &score_array[score_pointer_2].score_n_rect_2);
             }
             else
             {
                 score_array[score_pointer_1].score_n_rect_2.x = SCREEN_WIDTH / 2 - 15;
-                SDL_RenderCopy(renderer, score_array[score_pointer_1].score_n, &score_array[score_pointer_1].score_n_rect_1, &score_array[score_pointer_1].score_n_rect_2);
+                SDL_RenderCopy(renderer, sprite_sheet_image_texture, &score_array[score_pointer_1].score_n_rect_1, &score_array[score_pointer_1].score_n_rect_2);
                 score_array[score_pointer_2].score_n_rect_2.x = score_array[score_pointer_1].score_n_rect_2.w + score_array[score_pointer_1].score_n_rect_2.x;
-                SDL_RenderCopy(renderer, score_array[score_pointer_2].score_n, &score_array[score_pointer_2].score_n_rect_1, &score_array[score_pointer_2].score_n_rect_2);
+                SDL_RenderCopy(renderer, sprite_sheet_image_texture, &score_array[score_pointer_2].score_n_rect_1, &score_array[score_pointer_2].score_n_rect_2);
             }
 
             if (!start)
-                SDL_RenderCopy(renderer, initial_bird, &initial_bird_rect_1, &initial_bird_rect_2);
+                SDL_RenderCopy(renderer, sprite_sheet_image_texture, &initial_bird_rect_1, &initial_bird_rect_2);
             else
-                SDL_RenderCopyEx(renderer, bird, &bird_rect_1, &bird_rect_2, bird_angle, NULL, SDL_FLIP_NONE);
-            SDL_RenderCopy(renderer, platform_texture_1, &platform_1_rect_1, &platform_1_rect_2);
-            SDL_RenderCopy(renderer, platform_texture_2, &platform_2_rect_1, &platform_2_rect_2);
+                SDL_RenderCopyEx(renderer, sprite_sheet_image_texture, &bird_rect_1, &bird_rect_2, bird_angle, NULL, SDL_FLIP_NONE);
+
+            SDL_RenderCopy(renderer, sprite_sheet_image_texture, &platform_1_rect_1, &platform_1_rect_2);
+            SDL_RenderCopy(renderer, sprite_sheet_image_texture, &platform_2_rect_1, &platform_2_rect_2);
 
             if (player_died)
             {
-                SDL_RenderCopy(renderer, score_board, &score_board_rect_1, &score_board_rect_2);
-                show_score_board(renderer, &score_board_rect_2, die_sound, score_array, score_pointer_1, score_pointer_2, high_score_pointer_1, high_score_pointer_2, &score_board_score_rect_1, &score_board_score_rect_2, &high_score_board_score_rect_1, &high_score_board_score_rect_2);
+                SDL_RenderCopy(renderer, sprite_sheet_image_texture, &score_board_rect_1, &score_board_rect_2);
+                show_score_board(renderer, &score_board_rect_2, sprite_sheet_image_texture, die_sound, score_array, score_pointer_1, score_pointer_2, high_score_pointer_1, high_score_pointer_2, &score_board_score_rect_1, &score_board_score_rect_2, &high_score_board_score_rect_1, &high_score_board_score_rect_2);
             }
         }
         if (SDL_GetTicks() - last_time >= 150 && start)
@@ -462,19 +442,16 @@ int main(int argc, char *argv[])
         }
         if (SDL_GetTicks() - last_time_blink >= 70)
             player_died_for_blink = false;
-        // std::cout<<player_died_for_blink<<std::endl;
-        // if (!player_died && (SDL_HasIntersection(&bird_rect_2, &pipe_1_rect_2) || SDL_HasIntersection(&bird_rect_2, &pipe_2_rect_2) || SDL_HasIntersection(&bird_rect_2, &pipe_3_rect_2) || SDL_HasIntersection(&bird_rect_2, &pipe_4_rect_2) || SDL_HasIntersection(&bird_rect_2, &pipe_5_rect_2) || SDL_HasIntersection(&bird_rect_2, &pipe_6_rect_2) || SDL_HasIntersection(&bird_rect_2, &platform_1_rect_2) || SDL_HasIntersection(&bird_rect_2, &platform_2_rect_2)))
-        // {
-        //     if (!player_died)
-        //     {
-        //         Mix_PlayChannel(-1, hit_sound, 0);
-        //         // SDL_Delay(300);
-        //         // Mix_PlayChannel(-1, die_sound, 0);
-        //     }
-        //     player_died = true;
-        //     player_died_for_blink = true;
-        //     last_time_blink = SDL_GetTicks();
-        // }
+        if (!player_died && (SDL_HasIntersection(&bird_rect_2, &pipe_1_rect_2) || SDL_HasIntersection(&bird_rect_2, &pipe_2_rect_2) || SDL_HasIntersection(&bird_rect_2, &pipe_3_rect_2) || SDL_HasIntersection(&bird_rect_2, &pipe_4_rect_2) || SDL_HasIntersection(&bird_rect_2, &pipe_5_rect_2) || SDL_HasIntersection(&bird_rect_2, &pipe_6_rect_2) || SDL_HasIntersection(&bird_rect_2, &platform_1_rect_2) || SDL_HasIntersection(&bird_rect_2, &platform_2_rect_2)))
+        {
+            if (!player_died)
+            {
+                Mix_PlayChannel(-1, hit_sound, 0);
+            }
+            player_died = true;
+            player_died_for_blink = true;
+            last_time_blink = SDL_GetTicks();
+        }
         if (player_died)
             free_fall(&bird_rect_2);
         if (!pipe_1_crossed && pipe_1_rect_2.x < bird_rect_2.x)
@@ -571,16 +548,7 @@ int main(int argc, char *argv[])
 
     SDL_DestroyRenderer(renderer);
     SDL_FreeSurface(sprite_sheet_image);
-    SDL_DestroyTexture(background_texture);
-    SDL_DestroyTexture(pipe_texture_1);
-    SDL_DestroyTexture(pipe_texture_2);
-    SDL_DestroyTexture(pipe_texture_3);
-    SDL_DestroyTexture(pipe_texture_4);
-    SDL_DestroyTexture(pipe_texture_5);
-    SDL_DestroyTexture(pipe_texture_6);
-    SDL_DestroyTexture(bird);
-    SDL_DestroyTexture(platform_texture_1);
-    SDL_DestroyTexture(platform_texture_2);
+    SDL_DestroyTexture(sprite_sheet_image_texture);
     SDL_DestroyWindow(win);
     Mix_FreeChunk(wing_sound);
     Mix_FreeChunk(hit_sound);
