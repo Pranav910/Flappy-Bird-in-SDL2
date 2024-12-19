@@ -250,8 +250,8 @@ int main(int argc, char *argv[])
     SDL_Rect platform_2_rect_1 = {300, 0, 160, 50};
     SDL_Rect platform_2_rect_2 = {SCREEN_WIDTH - 10, SCREEN_HEIGHT - 130, SCREEN_WIDTH, 130};
 
-    SDL_Rect initial_bird_rect_1 = {28, 490, 20, 15};
-    SDL_Rect initial_bird_rect_2 = {SCREEN_WIDTH / 2 - 45, SCREEN_HEIGHT / 2, 55, 45};
+    SDL_Rect hovering_bird_rect_1 = {28, 490, 20, 15};
+    SDL_Rect hovering_bird_rect_2 = {SCREEN_WIDTH / 2 - 45, SCREEN_HEIGHT / 2, 55, 45};
 
     SDL_Rect bird_rect_1 = {0, 490, 20, 15};
     SDL_Rect bird_rect_2 = {SCREEN_WIDTH / 2 - 45, SCREEN_HEIGHT / 2, 55, 45};
@@ -389,7 +389,7 @@ int main(int argc, char *argv[])
 
         if (!start)
         {
-            hover_bird(&initial_bird_rect_2);
+            hover_bird(&hovering_bird_rect_2);
         }
 
         if (start && !player_died)
@@ -422,7 +422,7 @@ int main(int argc, char *argv[])
             }
 
             if (!start)
-                SDL_RenderCopy(renderer, sprite_sheet_image_texture, &initial_bird_rect_1, &initial_bird_rect_2);
+                SDL_RenderCopy(renderer, sprite_sheet_image_texture, &hovering_bird_rect_1, &hovering_bird_rect_2);
             else
                 SDL_RenderCopyEx(renderer, sprite_sheet_image_texture, &bird_rect_1, &bird_rect_2, bird_angle, NULL, SDL_FLIP_NONE);
 
